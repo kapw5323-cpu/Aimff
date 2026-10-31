@@ -1,0 +1,27 @@
+name: build
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make git curl xz-utils ldid
+      - name: Install Theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git $HOME/theos
+          curl -L https://github.com/theos/sdks/archive/master.tar.gz | tar xz -C /tmp
+          mv /tmp/sdks-master/* $HOME/theos/sdks/
+          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+      - name: Add substrate
+        run: |
+          curl -L -o $HOME/theos/lib/libsubstrate.dylib https://github.com/theos/lib/raw/master/libsubstrate.dylib
+      - name: Build package
+        run: make package FINALPACKAGE=1
+      - name: Upload deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: aimff-deb
+          path: packages/*.deb
