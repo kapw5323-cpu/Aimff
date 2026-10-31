@@ -1,0 +1,29 @@
+name: Build Deb Package
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Theos environment
+        uses: abiosoft/setup-theos@v1
+
+      - name: Build Package
+        run: |
+          make package FINALPACKAGE=1
+
+      - name: Upload Deb Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tweak-deb-package
+          path: packages/*.deb
+          
